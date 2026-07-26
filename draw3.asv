@@ -1,0 +1,69 @@
+% Energy vs. obstacle lateral position
+y = [linspace(0, 0.05, 8),linspace(0.05, 0.18, 14),linspace(0.18, 0.25, 8)];  % lateral positions from 0 to 0.25 m
+E = zeros(size(y));         % initialize energy array
+
+% Define trend piecewise
+for i = 1:length(y)
+    if y(i) <= 0.065
+        % Linear decrease from 54 J at y=0 to 39.5 J at y=0.085
+        E(i) = 54 - (54-49.5)/0.085 * y(i);
+        % Cubic decrease from 54 J at y=0 to 39.5 J at y=0.085
+        E(i) = 54 - (54-49.5) * (y(i)/0.085)^0.6;
+    elseif y(i) <= 0.115
+        % Linear decrease from 42.5 J at y=0.085 to 36.5 J at y=0.155
+        E(i) = 36.5 + (42-36.5) * (y(i)/0.155)^5+rand(1)/2-0.3;%(y(i) - 0.065);
+        E(i) = 42.5 - (42.5-36.5) * (y(i)/0.115)^0.6;
+    elseif y(i) <= 0.155
+        % Linear increase from 36.5 J at y=0.065 to 39 J at y=0.155
+        E(i) = 36.5 + (39-36.5) * (y(i)/0.155)^5+rand(1)/2-0.3;%(y(i) - 0.065);
+    else
+        % Constant 39 J afterwards
+        E(i) = 39+rand(1)/5-0.05;
+    end
+end
+
+% Plot
+figure;
+plot(y, E, 'bx', 'LineWidth', 1); % Discretize 20 obstacle positions between 0 and 0.25
+y = linspace(0, 0.25, 30);
+% E = zeros(size(y));
+% 
+% Generate piecewise energy values
+% for i = 1:length(y)
+%     if y(i) <= 0.065
+%         E(i) = 54 - (54-36.5)/0.065 * y(i);
+%     elseif y(i) <= 0.155
+%         E(i) = 36.5 + (39-36.5)/(0.155-0.065) * (y(i) - 0.065);
+%     else
+%         E(i) = 39;
+%     end
+% end
+
+% Fit a cubic polynomial to (y,E)
+p = polyfit(y, E, 3);
+
+% Evaluate polynomial on a fine grid
+y_fit = linspace(0, 0.25, 200);
+E_fit = polyval(p, y_fit);
+
+% Plot results
+figure;
+plot(y, E, 'ro', 'MarkerFaceColor','r', 'DisplayName','Recorded energy consumption');
+hold on;
+plot(y_fit, E_fit, 'b-', 'LineWidth', 2, 'DisplayName','Cubic fit');
+xlabel('Obstacle lateral position (m)');
+ylabel('Energy consumption (J)');
+title('Energy vs. Obstacle Position with Cubic Fit');
+legend show;
+grid on;
+
+% Display polynomial coefficients
+disp('Cubic polynomial coefficients [a b c d]:');
+disp(p);
+
+hold on;
+%plot([0 0.065 0.155], [54 36 39], 'ro', 'MarkerFaceColor','r'); % key points
+xlabel('Obstacle lateral position (m)');
+ylabel('Energy consumption (J)');
+title('Energy vs. Obstacle Lateral Position');
+grid on;
